@@ -1,0 +1,45 @@
+from github import Github
+# Using the PyGitHub library to pull data from the GitHub API
+
+g = Github('OAuthCode')
+# Actual OAuthCode omitted for security purposes
+
+salt_repo = g.get_repo('saltstack/salt')
+# Import the Salt Repository
+
+salt_repo_issues = salt_repo.get_issues(direction='asc')
+# Pull all issues from the Salt Repository, oldest to newest
+
+issues_list = []
+# Create an empty list to hold issues
+
+for issue in salt_repo_issues:
+	issues_list.append(issue)  
+# Populate the list with issues
+
+n = len(issues_list)
+# Determine how many issues we currently have
+
+labels_list = [[] for y in range(n)]
+# Create an empty list to hold labels for each issue
+
+for x in range(0,n):
+	for label in salt_repo_issues[x].get_labels():
+	labels_list[x].append(label.name)
+# Populate the list with labels
+  
+import pymysql.cursors
+# Import PyMySQL database connector
+
+connection = pymysql.connect(host='host', user='user', password='password', db='db', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+# Establish the connection
+
+try:
+	with connection.cursor() as cursor:
+		for x in range(0,n):
+			sql = 'INSERT INTO `saltRepoIssues` (`githubID`, `issueNumber`, `title`, `createdAt`, `updatedAt`, `closedAt`, `labels`) VALUES (%s, %s, %s, %s, %s, %s, %s)'
+			cursor.execute(sql, (salt_repo_issues[x].id, salt_repo_issues[x].number, salt_repo_issues[x].title, salt_repo_issues[x].created_at, salt_repo_issues[x].updated_at, salt_repo_issues[x].closed_at, str(listoflabels[x])))
+	connection.commit()
+finally:
+	connection.close()
+# Populate the MySQL table with background data (GitHubID, Issue Number, Title) and key data for analytics (Created At, Updated At, Closed At, Labels)
