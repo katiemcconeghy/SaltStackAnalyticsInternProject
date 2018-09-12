@@ -1,0 +1,32 @@
+mysql> CREATE DATABASE `db`;
+# Create a database
+
+mysql> use db;
+
+mysql> CREATE TABLE `saltRepoIssues` (
+    -> `id` int(11) NOT NULL AUTO_INCREMENT,
+    -> `githubID` int(11),
+    -> `issueNumber` int(11),
+    -> `title` text,
+    -> `createdAt` text,
+    -> `updatedAt` text,
+    -> `closedAt` text,
+    -> `labels` text,
+    -> PRIMARY KEY (`id`),
+    -> UNIQUE INDEX `githubIDunique` (`githubID`)
+    -> ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin AUTO_INCREMENT=1;
+# Create a table to hold the data pulled from the GitHub API
+
+mysql> desc saltRepoIssues;
++-------------+---------+------+-----+---------+----------------+
+| Field       | Type    | Null | Key | Default | Extra          |
++-------------+---------+------+-----+---------+----------------+
+| id          | int(11) | NO   | PRI | NULL    | auto_increment |
+| githubID    | int(11) | YES  | UNI | NULL    |                |
+| issueNumber | int(11) | YES  |     | NULL    |                |
+| title       | text    | YES  |     | NULL    |                |
+| createdAt   | text    | YES  |     | NULL    |                |
+| updatedAt   | text    | YES  |     | NULL    |                |
+| closedAt    | text    | YES  |     | NULL    |                |
+| labels      | text    | YES  |     | NULL    |                |
++-------------+---------+------+-----+---------+----------------+
