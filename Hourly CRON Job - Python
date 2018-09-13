@@ -1,0 +1,44 @@
+# Set up a CRON Job to run this process hourly
+
+#!/usr/bin/python
+
+from github import Github
+
+g = Github('OAuthCode')
+
+salt_repo = g.get_repo('saltstack/salt')
+
+from datetime import datetime, timedelta
+
+now = datetime.now()
+
+anhourago = now - timedelta(hours=1)
+
+salt_repo_issues_anhourago = salt_repo.get_issues(direction='asc', since=anhourago)
+
+issueslistanhourago = []
+
+for issue in salt_repo_issues_anhourago:
+	issueslistanhourago.append(issue)
+
+n = len(issueslistanhourago)
+
+labelslistanhourago = [[] for x in range(n)]
+
+for x in range(0,n):
+	for label in salt_repo_issues_anhourago[x].get_labels():
+		labelslistanhourago[x].append(label.name)
+
+
+import pymysql.cursors
+
+connection = pymysql.connect(host='host', user='user', password='password', db='db', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+
+try:
+	with connection.cursor() as cursor:
+		for x in range(0,n):
+			sql = 'INSERT INTO `saltRepoIssues` (`githubID`, `issueNumber`, `title`, `createdAt`, `updatedAt`, `closedAt`, `labels`) VALUES (%s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE `issueNumber`=%s, `title`=%s, `createdAt`=%s, `updatedAt`=%s, `closedAt`=%s, `labels`=%s'
+			cursor.execute(sql, (salt_repo_issues_anhourago[x].id, salt_repo_issues_anhourago[x].number, salt_repo_issues_anhourago[x].title, salt_repo_issues_anhourago[x].created_at, salt_repo_issues_anhourago[x].updated_at, salt_repo_issues_anhourago[x].closed_at, str(labelslistanhourago[x]), salt_repo_issues_anhourago[x].number, salt_repo_issues_anhourago[x].title, salt_repo_issues_anhourago[x].created_at, salt_repo_issues_anhourago[x].updated_at, salt_repo_issues_anhourago[x].closed_at, str(labelslistanhourago[x])))
+	connection.commit()
+finally:
+	connection.close()
